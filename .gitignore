@@ -4,6 +4,7 @@ client/dist
 
 # Angular cache
 client/.angular
+client/.nx
 
 # VS / .NET
 server/OpenFileBrowser.Api/bin
@@ -11,6 +12,3 @@ server/OpenFileBrowser.Api/obj
 
 # OS
 .DS_Store
-server/OpenFileBrowser.Api/.vs/OpenFileBrowser.Api/v17/.suo
-/server/OpenFileBrowser.Api/.vs
-/client/.nx

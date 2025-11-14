@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { OpenFileDialogComponent } from './open-file-dialog/open-file-dialog.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [OpenFileDialogComponent],
+  imports: [CommonModule, OpenFileDialogComponent],
   template: `
     <div class="app-shell">
       <h1>Server File Browser</h1>
