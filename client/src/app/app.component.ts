@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { OpenFileDialogComponent } from './open-file-dialog/open-file-dialog.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, OpenFileDialogComponent],
+  imports: [OpenFileDialogComponent],
   template: `
     <div class="app-shell">
       <h1>Server File Browser</h1>
@@ -36,9 +35,9 @@ import { OpenFileDialogComponent } from './open-file-dialog/open-file-dialog.com
   ]
 })
 export class AppComponent {
-  selectedFile: string | null = null;
+  protected selectedFile: string | null = null;
 
-  handleFileSelected(path: string) {
+  protected handleFileSelected(path: string) {
     this.selectedFile = path;
   }
 }

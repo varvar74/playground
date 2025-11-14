@@ -4,7 +4,6 @@ client/dist
 
 # Angular cache
 client/.angular
-client/.nx
 
 # VS / .NET
 server/OpenFileBrowser.Api/bin
