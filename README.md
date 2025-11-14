@@ -5,14 +5,14 @@ This repository pairs an Angular 17 component with an ASP.NET Web API 2 back end
 ## Projects
 
 - `client/` – Angular front-end containing the `OpenFileDialogComponent`.
-- `server/` – ASP.NET Web API 2 self-host (`OpenFileBrowser.Api`).
+- `server/` – ASP.NET Core minimal API (`OpenFileBrowser.Api`).
 
 ## Getting started
 
-1. **Backend** (requires the .NET SDK on Windows to run the Web API 2 self-host)
+1. **Backend**
    ```bash
    cd server/OpenFileBrowser.Api
-   dotnet run -- http://localhost:5002
+   dotnet run
    ```
 2. **Frontend**
    ```bash

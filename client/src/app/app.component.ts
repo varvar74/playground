@@ -36,9 +36,9 @@ import { OpenFileDialogComponent } from './open-file-dialog/open-file-dialog.com
   ]
 })
 export class AppComponent {
-  selectedFile: string | null = null;
+  protected selectedFile: string | null = null;
 
-  handleFileSelected(path: string) {
+  protected handleFileSelected(path: string) {
     this.selectedFile = path;
   }
 }

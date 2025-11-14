@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FileSystemService } from './file-system.service';
 import { DirectoryListingResponse, FileEntry, DriveInfo } from '../models/file-entry';
-import { Observable, finalize } from 'rxjs';
 
 @Component({
   selector: 'app-open-file-dialog',
@@ -15,15 +14,17 @@ import { Observable, finalize } from 'rxjs';
 export class OpenFileDialogComponent implements OnInit {
   @Output() fileSelected = new EventEmitter<string>();
 
-  drives: DriveInfo[] = [];
-  directories: FileEntry[] = [];
-  files: FileEntry[] = [];
-  breadcrumbs: string[] = [];
-  activeDirectory: string | null = null;
-  selectedFile: FileEntry | null = null;
-  fileFilter = 'All files (*.*)';
-  filters = ['All files (*.*)', 'Images (*.png;*.jpg)', 'Text (*.txt)'];
-  isLoading = false;
+  protected drives = signal<DriveInfo[]>([]);
+  protected directories = signal<FileEntry[]>([]);
+  protected files = signal<FileEntry[]>([]);
+  protected breadcrumbs = signal<string[]>([]);
+  protected activeDirectory = signal<string | null>(null);
+  protected selectedFile = signal<FileEntry | null>(null);
+  protected fileFilter = signal('All files (*.*)');
+  protected filters = ['All files (*.*)', 'Images (*.png;*.jpg)', 'Text (*.txt)'];
+  protected isLoading = this.fileSystem.loading;
+
+  readonly breadcrumbPath = computed(() => this.breadcrumbs().join('\\'));
 
   constructor(private readonly fileSystem: FileSystemService) {}
 
@@ -31,57 +32,53 @@ export class OpenFileDialogComponent implements OnInit {
     this.loadDrives();
   }
 
-  loadDrives() {
-    this.withLoading(this.fileSystem.getDrives()).subscribe({
-      next: (drives) => {
-        this.drives = drives;
-        if (drives.length) {
-          this.openDirectory(drives[0].path);
-        }
+  protected loadDrives() {
+    this.fileSystem.getDrives().subscribe((drives) => {
+      this.drives.set(drives);
+      if (drives.length) {
+        this.openDirectory(drives[0].path);
       }
     });
   }
 
-  openDirectory(path: string | null) {
-    this.withLoading(this.fileSystem.listDirectory(path)).subscribe({
-      next: (response: DirectoryListingResponse) => {
-        this.activeDirectory = response.path;
-        this.directories = response.directories;
-        this.files = response.files;
-        this.breadcrumbs = this.buildBreadcrumbs(response.path);
-        this.selectedFile = null;
-      }
+  protected openDirectory(path: string | null) {
+    this.fileSystem.listDirectory(path).subscribe((response: DirectoryListingResponse) => {
+      this.activeDirectory.set(response.path);
+      this.directories.set(response.directories);
+      this.files.set(response.files);
+      this.breadcrumbs.set(this.buildBreadcrumbs(response.path));
+      this.selectedFile.set(null);
     });
   }
 
-  handleTreeSelect(entry: FileEntry) {
+  protected handleTreeSelect(entry: FileEntry) {
     this.openDirectory(entry.path);
   }
 
-  handleDirectoryOpen(entry: FileEntry) {
+  protected handleDirectoryOpen(entry: FileEntry) {
     this.openDirectory(entry.path);
   }
 
-  handleFileClick(entry: FileEntry) {
-    this.selectedFile = entry;
+  protected handleFileClick(entry: FileEntry) {
+    this.selectedFile.set(entry);
   }
 
-  handleConfirm() {
-    const file = this.selectedFile;
+  protected handleConfirm() {
+    const file = this.selectedFile();
     if (file) {
       this.fileSelected.emit(file.path);
     }
   }
 
-  goUp() {
-    const crumbs = this.breadcrumbs;
+  protected goUp() {
+    const crumbs = this.breadcrumbs();
     if (crumbs.length > 1) {
       const parentPath = crumbs.slice(0, -1).join('\\');
       this.openDirectory(parentPath);
     }
   }
 
-  buildBreadcrumbs(path: string): string[] {
+  protected buildBreadcrumbs(path: string): string[] {
     if (!path) {
       return [];
     }
@@ -90,20 +87,11 @@ export class OpenFileDialogComponent implements OnInit {
     return segments.filter(Boolean);
   }
 
-  isSelected(entry: FileEntry) {
-    return this.selectedFile?.path === entry.path;
+  protected isSelected(entry: FileEntry) {
+    return this.selectedFile()?.path === entry.path;
   }
 
-  trackByPath(_: number, entry: FileEntry) {
+  protected trackByPath(_: number, entry: FileEntry) {
     return entry.path;
-  }
-
-  get breadcrumbPath(): string {
-    return this.breadcrumbs.join('\\');
-  }
-
-  private withLoading<T>(request: Observable<T>) {
-    this.isLoading = true;
-    return request.pipe(finalize(() => (this.isLoading = false)));
   }
 }
