@@ -1,12 +1,14 @@
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JsonOptions>(options =>
 {
-    options.SerializerOptions.PropertyNamingPolicy = null;
+    // Return camelCase property names to match the Angular client interfaces
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
 builder.Services.AddCors(options =>
