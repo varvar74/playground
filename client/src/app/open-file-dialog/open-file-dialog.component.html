@@ -76,11 +76,7 @@
     </div>
     <div class="selection">
       <label for="fileType">Files of type:</label>
-      <select
-        id="fileType"
-        [ngModel]="fileFilter()"
-        (ngModelChange)="fileFilter.set($event)"
-      >
+      <select id="fileType" [(ngModel)]="fileFilter">
         <option *ngFor="let filter of filters" [value]="filter">{{ filter }}</option>
       </select>
     </div>
