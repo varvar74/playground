@@ -1,0 +1,24 @@
+# Windows-Style Open File Dialog
+
+This repository pairs an Angular 17 component with an ASP.NET Core 8 API to browse the file system of the machine hosting the API, replicating the UX of the classic Windows "Open File" dialog.
+
+## Projects
+
+- `client/` – Angular front-end containing the `OpenFileDialogComponent`.
+- `server/` – ASP.NET Core minimal API (`OpenFileBrowser.Api`).
+
+## Getting started
+
+1. **Backend**
+   ```bash
+   cd server/OpenFileBrowser.Api
+   dotnet run
+   ```
+2. **Frontend**
+   ```bash
+   cd client
+   npm install
+   npm start
+   ```
+
+Update `client/src/environments/environment.ts` if the backend is served from a non-default URL.
