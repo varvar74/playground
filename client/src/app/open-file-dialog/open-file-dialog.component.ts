@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FileSystemService } from './file-system.service';
 import { DirectoryListingResponse, FileEntry, DriveInfo } from '../models/file-entry';
-import { Observable, finalize } from 'rxjs';
 
 @Component({
   selector: 'app-open-file-dialog',
@@ -15,15 +14,17 @@ import { Observable, finalize } from 'rxjs';
 export class OpenFileDialogComponent implements OnInit {
   @Output() fileSelected = new EventEmitter<string>();
 
-  protected drives: DriveInfo[] = [];
-  protected directories: FileEntry[] = [];
-  protected files: FileEntry[] = [];
-  protected breadcrumbs: string[] = [];
-  protected activeDirectory: string | null = null;
-  protected selectedFile: FileEntry | null = null;
-  protected fileFilter = 'All files (*.*)';
+  protected drives = signal<DriveInfo[]>([]);
+  protected directories = signal<FileEntry[]>([]);
+  protected files = signal<FileEntry[]>([]);
+  protected breadcrumbs = signal<string[]>([]);
+  protected activeDirectory = signal<string | null>(null);
+  protected selectedFile = signal<FileEntry | null>(null);
+  protected fileFilter = signal('All files (*.*)');
   protected filters = ['All files (*.*)', 'Images (*.png;*.jpg)', 'Text (*.txt)'];
-  protected isLoading = false;
+  protected isLoading = this.fileSystem.loading;
+
+  readonly breadcrumbPath = computed(() => this.breadcrumbs().join('\\'));
 
   constructor(private readonly fileSystem: FileSystemService) {}
 
@@ -32,25 +33,21 @@ export class OpenFileDialogComponent implements OnInit {
   }
 
   protected loadDrives() {
-    this.withLoading(this.fileSystem.getDrives()).subscribe({
-      next: (drives) => {
-        this.drives = drives;
-        if (drives.length) {
-          this.openDirectory(drives[0].path);
-        }
+    this.fileSystem.getDrives().subscribe((drives) => {
+      this.drives.set(drives);
+      if (drives.length) {
+        this.openDirectory(drives[0].path);
       }
     });
   }
 
   protected openDirectory(path: string | null) {
-    this.withLoading(this.fileSystem.listDirectory(path)).subscribe({
-      next: (response: DirectoryListingResponse) => {
-        this.activeDirectory = response.path;
-        this.directories = response.directories;
-        this.files = response.files;
-        this.breadcrumbs = this.buildBreadcrumbs(response.path);
-        this.selectedFile = null;
-      }
+    this.fileSystem.listDirectory(path).subscribe((response: DirectoryListingResponse) => {
+      this.activeDirectory.set(response.path);
+      this.directories.set(response.directories);
+      this.files.set(response.files);
+      this.breadcrumbs.set(this.buildBreadcrumbs(response.path));
+      this.selectedFile.set(null);
     });
   }
 
@@ -63,18 +60,18 @@ export class OpenFileDialogComponent implements OnInit {
   }
 
   protected handleFileClick(entry: FileEntry) {
-    this.selectedFile = entry;
+    this.selectedFile.set(entry);
   }
 
   protected handleConfirm() {
-    const file = this.selectedFile;
+    const file = this.selectedFile();
     if (file) {
       this.fileSelected.emit(file.path);
     }
   }
 
   protected goUp() {
-    const crumbs = this.breadcrumbs;
+    const crumbs = this.breadcrumbs();
     if (crumbs.length > 1) {
       const parentPath = crumbs.slice(0, -1).join('\\');
       this.openDirectory(parentPath);
@@ -91,19 +88,10 @@ export class OpenFileDialogComponent implements OnInit {
   }
 
   protected isSelected(entry: FileEntry) {
-    return this.selectedFile?.path === entry.path;
+    return this.selectedFile()?.path === entry.path;
   }
 
   protected trackByPath(_: number, entry: FileEntry) {
     return entry.path;
-  }
-
-  protected get breadcrumbPath(): string {
-    return this.breadcrumbs.join('\\');
-  }
-
-  private withLoading<T>(request: Observable<T>) {
-    this.isLoading = true;
-    return request.pipe(finalize(() => (this.isLoading = false)));
   }
 }
