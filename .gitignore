@@ -1,0 +1,13 @@
+# Node
+client/node_modules
+client/dist
+
+# Angular cache
+client/.angular
+
+# VS / .NET
+server/OpenFileBrowser.Api/bin
+server/OpenFileBrowser.Api/obj
+
+# OS
+.DS_Store
