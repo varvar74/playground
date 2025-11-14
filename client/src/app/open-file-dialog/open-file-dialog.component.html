@@ -1,12 +1,12 @@
 <section class="dialog-shell">
   <header>
     <div class="breadcrumbs">
-      <button type="button" class="nav-button" (click)="goUp()" [disabled]="breadcrumbs.length <= 1">
+      <button type="button" class="nav-button" (click)="goUp()" [disabled]="breadcrumbs().length <= 1">
         ⬆
       </button>
       <div class="breadcrumb-path">
-        <ng-container *ngIf="breadcrumbs.length; else emptyPath">
-          <span *ngFor="let crumb of breadcrumbs; let last = last" class="crumb">
+        <ng-container *ngIf="breadcrumbs().length; else emptyPath">
+          <span *ngFor="let crumb of breadcrumbs(); let last = last" class="crumb">
             {{ crumb }}
             <span *ngIf="!last">›</span>
           </span>
@@ -16,7 +16,7 @@
     </div>
     <div class="address-bar">
       <label>Address:</label>
-      <input [value]="breadcrumbPath" readonly />
+      <input [value]="breadcrumbPath()" readonly />
     </div>
   </header>
 
@@ -24,7 +24,7 @@
     <aside class="tree-pane">
       <h3>Quick access</h3>
       <ul>
-        <li *ngFor="let drive of drives; trackBy: trackByPath">
+        <li *ngFor="let drive of drives(); trackBy: trackByPath">
           <button type="button" (click)="openDirectory(drive.path)">
             {{ drive.name }}
           </button>
@@ -32,7 +32,7 @@
       </ul>
       <h3>Folders</h3>
       <ul>
-        <li *ngFor="let directory of directories; trackBy: trackByPath">
+        <li *ngFor="let directory of directories(); trackBy: trackByPath">
           <button type="button" (click)="handleTreeSelect(directory)">
             📁 {{ directory.name }}
           </button>
@@ -48,10 +48,10 @@
         <span>Size</span>
       </div>
 
-      <div class="listing" *ngIf="!isLoading; else loading">
+      <div class="listing" *ngIf="!isLoading(); else loading">
         <div
           class="listing-row"
-          *ngFor="let file of files; trackBy: trackByPath"
+          *ngFor="let file of files(); trackBy: trackByPath"
           [class.selected]="isSelected(file)"
           (click)="handleFileClick(file)"
         >
@@ -72,20 +72,16 @@
   <footer>
     <div class="selection">
       <label for="fileName">File name:</label>
-      <input id="fileName" [value]="selectedFile?.path || ''" readonly />
+      <input id="fileName" [value]="selectedFile()?.path || ''" readonly />
     </div>
     <div class="selection">
       <label for="fileType">Files of type:</label>
-      <select
-        id="fileType"
-        [ngModel]="fileFilter"
-        (ngModelChange)="fileFilter = $event"
-      >
+      <select id="fileType" [(ngModel)]="fileFilter">
         <option *ngFor="let filter of filters" [value]="filter">{{ filter }}</option>
       </select>
     </div>
     <div class="actions">
-      <button type="button" (click)="handleConfirm()" [disabled]="!selectedFile">Open</button>
+      <button type="button" (click)="handleConfirm()" [disabled]="!selectedFile()">Open</button>
     </div>
   </footer>
 </section>
